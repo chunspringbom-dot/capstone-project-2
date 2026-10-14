@@ -1,394 +1,135 @@
-# 🥛 Milk Recommendation System
+# Milk Recommendation System
+### A student-built nutrition comparison and preference-matching prototype
 
-## 📌 Overview
+This project explores how nutrition information can become easier to compare and use. It began with a question about school milk products and developed into a browser-based prototype combining nutrition interests with software development.
 
-Milk Recommendation System is a personalized milk recommendation web application created through collaboration between students interested in Biology and Computer Science.
+**Current status:** working prototype code with an 11-product local dataset, rule-based rankings, and barcode lookup integration. Product data, scoring rules, and external-data handling still require validation. This is not a clinically validated dietary recommendation system.
 
-Our project combines:
+## Why we built it
 
-* nutrition analysis,
-* recommendation systems,
-* barcode scanning,
-* and data standardization.
+Our initial question was: **Which milk should we choose, and why?**
 
-Unlike simple information websites, our application focuses on:
+Simply collecting nutrition facts was not enough: those facts already appear on packaging. During team discussions, Zion challenged the usefulness of an information-only website. That feedback shifted the project toward preference-based comparison. A teacher's suggestion to make product recognition more interactive helped motivate the scanning feature.
 
-> helping users compare milk products fairly and receive personalized recommendations.
+The project now asks a more focused design question:
 
----
+**How can we help students compare milk products against their stated preferences while understanding the evidence and limitations behind each result?**
 
-# 🌱 Motivation
+## What is implemented
 
-This project started from our simple curiosity.
+The following describes code in `index.html`, reviewed on October 14, 2026. Code presence does not establish successful operation on every device.
 
-Most milk products look very similar from the outside. However, their tastes are different, and every company advertises that their product is healthier or better for consumers.
+| Component | Current implementation |
+| --- | --- |
+| Local product catalog | 11 hard-coded milk entries with nutrition values, lactose-free flags, and prices |
+| Preference controls | Lactose-free, protein, sugar, fat, calories, calcium, and price importance |
+| Ranking | Hand-written weighted scoring, a top-three display, and full rankings |
+| Product details | Nutrient values, preference-related warnings, and comparisons with local entries |
+| Barcode input | Camera scanning through html5-qrcode and manual barcode entry |
+| External lookup | Open Food Facts product API integration |
+| Actual-intake calculator | Not implemented |
+| Nutrition-label OCR | Not implemented |
+| Machine learning | Not implemented; current scoring is rule-based |
+| Validated unit normalization | Not yet implemented consistently across external data |
 
-This made us question:
+## How the prototype works
 
-> “Which milk is actually good for our health?”
+1. A user selects preferences and price importance.
+2. The application applies fixed rules and weights to local products.
+3. It displays ranked products and individual nutrient information.
+4. Alternatively, a barcode lookup retrieves an external product and compares its score with local entries.
 
-We wanted to compare products scientifically rather than relying only on advertisements or packaging.
+The displayed percentage is a normalized **preference score**. It is not a probability of health benefit, a medical suitability estimate, or a validated measure of nutritional quality. The weights and cutoffs are prototype design choices, not established clinical thresholds.
 
-At first, our goal was simple:
+## What the code review revealed
 
-* collect nutrition information,
-* compare products,
-* and explain health-related differences.
+These issues are open engineering and scientific limitations, not completed fixes:
 
-However, during development, we encountered an important problem.
+- **Inconsistent measurement bases:** the external lookup reads fields named `*_100g`. Energy can fall back to a per-serving field without conversion. Therefore, the earlier claim that all values are standardized per 100 mL was too strong. Mass, volume, and serving bases must be recorded and reconciled before comparison.
+- **Missing values become zero:** absent nutrient fields and external prices are currently assigned zero. Missing price can then earn favorable price points; missing sugar or fat can also appear favorable.
+- **Lactose-free status is incomplete:** external products default to `false`, which cannot distinguish an unknown status from a confirmed non-lactose-free product.
+- **A requirement is treated as a preference:** selecting lactose-free adds a scoring weight rather than excluding products that fail the requirement.
+- **Data provenance is missing:** local entries do not record label photographs, source dates, or verification history. The interface labels prices as per 500 mL, but the underlying source and conversion are not documented.
+- **Nutrient naming needs verification:** the internal field `fat` is displayed as saturated fat and populated from an external saturated-fat field. Local values need label verification before their meaning can be confirmed.
+- **External product scope is unchecked:** the lookup does not explicitly restrict results to milk products.
+- **Validation remains outstanding:** this README does not report measured improvements in nutrition understanding, real-world adoption, or health outcomes.
 
----
+## Biology and health-literacy contribution
 
-# 💭 Story Behind the Project
+The biological component should be demonstrated through accurate concepts and evidence-based design decisions:
 
-At first, our team was not fully unified about the project direction.
+- Distinguish total sugars from added sugars. Naturally occurring milk sugar contributes to total sugars.
+- Explain lactose digestion and distinguish lactose intolerance from milk-protein allergy.
+- Do not describe lactose-free dairy as safe for someone with milk allergy.
+- Distinguish total fat from saturated fat and document measurement units.
+- Explain tradeoffs between nutrients, serving volume, cost, and user preferences without declaring one product universally healthiest.
 
-I suggested creating a milk information website, and Zion initially agreed with the idea. However, as we continued discussing, we began questioning whether the project was truly useful.
+These concepts should guide the interface and dataset. They should not be used to imply that the app diagnoses conditions or prescribes diets.
 
-Zion pointed out an important issue:
+## Proposed next phase: a school nutrition-literacy pilot
 
-> “People can already find nutrition information on the internet. The nutrition facts are also written on the side of the milk package.”
+**Proposed research question:** Does a verified comparison tool help students answer milk-label questions more accurately than viewing labels alone?
 
-His opinion was reasonable, and it made us rethink the purpose of the project.
+This is a proposed study, not a completed result.
 
-We realized that:
+### Phase 1 — Establish trustworthy inputs
 
-> simply displaying information would not give users a strong reason to use our service.
+- Audit the existing 11 products against current packaging or manufacturer information.
+- Record source, verification date, serving volume, nutrient units, package size, and price basis.
+- Preserve unknown values explicitly.
+- Implement documented per-100-mL comparisons only where the source supports a volume conversion.
+- Separate verified requirements from optional scoring preferences.
+- Publish the scoring rules and explain each recommendation.
 
-Because of this, we shifted our focus from:
+### Phase 2 — Add one useful feature
 
-```text
-Simple Information Display
-```
+Build an actual-intake calculator from verified volume-based data:
 
-to:
+`nutrient consumed = nutrient per 100 mL × volume consumed in mL / 100`
 
-```text
-Personalized Recommendation and Comparison
-```
+Show both the common comparison basis and the user's chosen volume. Add short explanations of the concepts above.
 
-Instead of only showing nutrition facts, we decided to:
+### Phase 3 — Test understanding and usability
 
-* recommend products based on personal preferences,
-* compare products automatically,
-* and explain why a specific milk is suitable for a user.
+Start with a small, voluntary school pilot after agreeing on an appropriate process with a supervising teacher.
 
-Later, our teacher advised us to make the project more interactive and visually engaging.
+- Use matched label-reading tasks: nutrient comparison, serving-size calculation, and identifying whether information is unknown.
+- Compare labels alone with the tool using randomized groups or counterbalanced task order.
+- Use equivalent task sets to reduce practice effects.
+- Define answer keys and the primary outcome before collecting data.
+- Measure accuracy, completion time, and observed misunderstandings; record satisfaction separately.
+- Report participant count separately from the number of task responses.
+- Avoid collecting unnecessary health information; this pilot does not require milk consumption or symptom testing.
+- Report small-sample and single-school limitations. Improved task performance would not establish improved health.
 
-He suggested that:
+### Phase 4 — Evaluate practical use
 
-> recognizing milk products through scanning could become an important feature.
+If the pilot supports usefulness, test an accessible school QR-code entry point and a maintainable verified catalog. Measure voluntary reuse, failed lookups, and the effort required to keep data current before expanding to more products.
 
-After receiving this feedback, we expanded the project further by adding:
+OCR, international catalogs, and machine learning are longer-term possibilities. They should follow evidence of user need and reliable data handling.
 
-* barcode scanning,
-* API integration,
-* and product recognition features.
+## Collaboration and ownership
 
-This became one of the biggest turning points in our project.
+The project originated from the student project initiator's milk-comparison idea and developed through collaboration with Zion, who is interested in computer science. Team discussion and teacher feedback shaped the direction.
 
----
+Detailed individual implementation, research, testing, and AI-assisted contributions should be documented from actual work records. This README does not infer authorship of specific code components.
 
-# 🚩 Problem Statement
+## Running the prototype
 
-Many milk products use different serving-size standards.
+The interface is contained in `index.html` and uses HTML, CSS, and JavaScript. Serve it through a static web server. Camera access generally requires an appropriate secure browser context and permission. External fonts, the scanner library, and product lookups require network access.
 
-For example:
+## Evidence to collect as the project develops
 
-* some products use 100mL,
-* others use 200mL,
-* and some use bottle-based servings.
+- A source-backed product dataset and a reproducible data audit
+- A documented scoring specification and worked examples
+- A pilot protocol and anonymized aggregate findings
+- A development log linking feedback to changes
+- Clear individual contributions and accurate implementation status
 
-Because of this:
+## References
 
-* products are difficult to compare fairly,
-* users must calculate nutrition manually,
-* and recommendation systems become inaccurate.
+- [FDA: Added Sugars on the Nutrition Facts Label](https://www.fda.gov/food/nutrition-facts-label/added-sugars-nutrition-facts-label)
+- [NIDDK: Definition and Facts for Lactose Intolerance](https://www.niddk.nih.gov/health-information/digestive-diseases/lactose-intolerance/definition-facts)
+- [Open Food Facts](https://world.openfoodfacts.org/)
 
----
-
-# ✅ Our Solution
-
-Our application solves these problems through:
-
-```text
-Barcode Scanning
-        ↓
-Nutrition Data Collection
-        ↓
-100mL Standardization
-        ↓
-Preference-Based Recommendation
-        ↓
-Product Comparison
-```
-
-The system:
-
-* standardizes nutrition values,
-* compares products fairly,
-* recommends products based on user preferences,
-* and explains nutritional differences clearly.
-
----
-
-# 🔄 Development Process
-
-## Stage 1 — Information Website
-
-Initial Goal:
-
-* organize milk nutrition data,
-* create comparison tables,
-* explain health information.
-
-Problem:
-
-* similar information already existed online,
-* lack of originality and usefulness.
-
----
-
-## Stage 2 — Personalized Recommendation
-
-We introduced:
-
-* low sugar preferences,
-* high protein preferences,
-* lactose-free filtering,
-* and price importance settings.
-
-This transformed the project into:
-
-> a personalized recommendation system.
-
----
-
-## Stage 3 — Barcode Recognition
-
-We added:
-
-* barcode scanning,
-* Open Food Facts API integration,
-* automatic product lookup.
-
-This improved accessibility and usability.
-
----
-
-## Stage 4 — Nutrition Standardization
-
-We discovered another major issue:
-
-Different products used different nutrition standards.
-
-For example:
-
-```text
-Product A → 200mL standard
-Product B → 100mL standard
-```
-
-Direct comparison was misleading.
-
-To solve this issue, we standardized all nutrition information into:
-
-> per 100mL values.
-
-This became one of the most important technical aspects of our project.
-
----
-
-# ⚙️ Core Features
-
-## ✅ Personalized Recommendation
-
-Users can select:
-
-* low sugar,
-* high protein,
-* lactose free,
-* low fat,
-* price importance.
-
-The application calculates recommendation scores automatically.
-
----
-
-## ✅ Barcode Scanner
-
-Users can scan products directly using their device camera.
-
-The application retrieves product information automatically.
-
----
-
-## ✅ 100mL Standardization
-
-All nutritional information is converted into:
-
-> standardized 100mL-based values.
-
-This allows fair product comparison.
-
----
-
-## ✅ Product Comparison
-
-Users can compare:
-
-* calories,
-* sugar,
-* protein,
-* calcium,
-* price.
-
----
-
-# 🧬 Biology Contributions
-
-The biology-related aspects include:
-
-* nutritional analysis,
-* sugar intake comparison,
-* protein analysis,
-* lactose intolerance research,
-* low-fat and non-fat milk comparison.
-
-The project focuses on helping users make healthier dietary choices.
-
----
-
-# 💻 Computer Science Contributions
-
-The computer science-related aspects include:
-
-* recommendation algorithms,
-* weighted scoring systems,
-* nutrition database design,
-* barcode recognition,
-* API integration,
-* dynamic UI rendering,
-* data normalization.
-
----
-
-# 🗂️ Mind Map
-
-```text
-Milk Recommendation System
-│
-├── Nutrition Database
-│   ├── Calories
-│   ├── Sugar
-│   ├── Protein
-│   ├── Calcium
-│   └── Price
-│
-├── Personalized Recommendation
-│   ├── Low Sugar
-│   ├── High Protein
-│   ├── Lactose Free
-│   ├── Low Fat
-│   └── Price Importance
-│
-├── Barcode Recognition
-│   ├── Camera Input
-│   ├── Product Detection
-│   └── API Integration
-│
-├── Nutrition Standardization
-│   ├── 100mL Conversion
-│   └── Fair Comparison
-│
-└── Product Comparison
-    ├── Calories
-    ├── Sugar
-    ├── Protein
-    ├── Calcium
-    └── Price
-```
-
----
-
-# 🚀 Future Directions
-
-Possible future improvements include:
-
-## More Product Expansion
-
-* add more milk brands,
-* expand into American products,
-* include international products.
-
-## AI Recommendation System
-
-* AI-based health recommendations,
-* machine learning recommendation models,
-* personalized dietary analysis.
-
-## User Review System
-
-Users can:
-
-* leave reviews,
-* score products,
-* and contribute to community-based rankings.
-
-## Actual Intake Calculation
-
-Future versions may:
-
-* calculate real nutritional intake,
-* based on how much milk users actually drink.
-
-## OCR Recognition
-
-Future versions may:
-
-* recognize nutrition labels directly from images,
-* without requiring barcodes.
-
----
-
-# ⚠️ Limitations
-
-Current limitations include:
-
-* limited milk database,
-* dependence on external APIs,
-* rule-based recommendation system,
-* OCR recognition not fully implemented yet.
-
----
-
-# 🛠️ Technologies Used
-
-* HTML
-* CSS
-* JavaScript
-* Open Food Facts API
-* Netlify
-* GitHub
-* Google Spreadsheet
-
----
-
-# 📌 Conclusion
-
-This project began as a simple milk information website but gradually evolved into:
-
-> a personalized nutrition recommendation platform.
-
-More importantly, this project taught us:
-
-* iterative problem solving,
-* interdisciplinary collaboration,
-* user-centered design,
-* and how to improve ideas through criticism and feedback.
-
-Rather than stopping at simple information delivery, we continuously asked:
-
-> “Why would users actually use this service?”
-
-That question became the foundation of our project’s growth.
+The project's next milestone is a trustworthy, explainable tool with measured educational usefulness.
